@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>PAASWE AR Experience</title>
+
+
+<!-- ================================================= -->
+<!-- A-FRAME -->
+<!-- ================================================= -->
+
+<script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+
+
+<!-- ================================================= -->
+<!-- MINDAR -->
+<!-- ================================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+
+<style>
+
+/* ================================================= */
+/* BASIC */
+/* ================================================= */
+
+body {
+
+    margin: 0;
+
+    overflow: hidden;
+
+    background: black;
+
+    font-family: Arial, sans-serif;
+
+    touch-action: none;
+
+}
+
+
+.example-container {
+
+    width: 100%;
+
+    height: 100%;
+
+    position: absolute;
+
+    overflow: hidden;
+
+}
+
+
+a-scene {
+
+    touch-action: none;
+
+}
+
+
+
+/* ================================================= */
+/* PROGRESS */
+/* ================================================= */
+
+#progress {
+
+    position: fixed;
+
+    top: 20px;
+
+    right: 20px;
+
+    z-index: 9999;
+
+    color: white;
+
+    background: rgba(0,0,0,0.75);
+
+    padding: 10px 17px;
+
+    border-radius: 25px;
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+    pointer-events: none;
+
+}
+
+
+
+/* ================================================= */
+/* INSTRUCTION */
+/* ================================================= */
+
+#instruction {
+
+    position: fixed;
+
+    bottom: 25px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    z-index: 9999;
+
+    color: white;
+
+    background: rgba(0,0,0,0.75);
+
+    padding: 10px 18px;
+
+    border-radius: 20px;
+
+    font-size: 15px;
+
+    text-align: center;
+
+    pointer-events: none;
+
+    display: none;
+
+    white-space: nowrap;
+
+}
+
+
+
+/* ================================================= */
+/* 3D MODEL LOADING */
+/* ================================================= */
+
+#modelLoading {
+    position: fixed;
+    left: 50%;
+    bottom: 82px;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: none;
+    color: white;
+    background: rgba(0,0,0,0.78);
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    text-align: center;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+#modelLoading.error {
+    background: rgba(130,0,0,0.82);
+}
+
+/* ================================================= */
+/* NEXT BUTTON */
+/* ================================================= */
+
+#nextButton {
+
+    position: fixed;
+
+    right: 25px;
+
+    bottom: 25px;
+
+    z-index: 9999;
+
+    display: none;
+
+    color: white;
+
+    background: rgba(0,0,0,0.80);
+
+    border: 2px solid white;
+
+    padding: 12px 22px;
+
+    border-radius: 25px;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    user-select: none;
+
+    -webkit-user-select: none;
+
+    touch-action: manipulation;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+
+}
+
+
+#nextButton:active {
+
+    transform: scale(0.95);
+
+}
+
+
+
+/* ================================================= */
+/* FRAGMENT CLUE */
+/* ================================================= */
+
+#fragmentClue {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(72vw, 520px);
+    max-height: 62vh;
+    object-fit: contain;
+    z-index: 9000;
+    opacity: 0.45;
+    display: none;
+    pointer-events: none;
+    border-radius: 8px;
+}
+
+#clueLabel {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9001;
+    color: white;
+    background: rgba(0,0,0,0.68);
+    padding: 9px 16px;
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: bold;
+    display: none;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ================================================= */
+/* FINAL SCREEN */
+/* ================================================= */
+
+#finalScreen {
+
+    position: fixed;
+
+    top: 0;
+
+    left: 0;
+
+    width: 100%;
+
+    height: 100%;
+
+    z-index: 10000;
+
+    background: rgba(70,70,70,0.34);
+
+    display: none;
+
+    flex-direction: column;
+
+    justify-content: flex-start;
+
+    align-items: center;
+
+    text-align: center;
+
+    color: white;
+    box-sizing: border-box;
+    padding: 32px 20px 28px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    pointer-events: none;
+
+}
+
+
+#finalTitle {
+
+    font-size: 34px;
+
+    font-weight: 700;
+    line-height: 1.15;
+
+    margin: 0 0 14px 0;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+
+}
+
+
+#finalMural {
+
+    width: auto;
+    height: min(56vh, 540px);
+
+    max-width: min(78vw, 540px);
+    max-height: 56vh;
+
+    object-fit: contain;
+
+    display: block;
+    box-shadow: 0 3px 18px rgba(0,0,0,0.18);
+
+}
+
+
+#finalMessage {
+
+    margin-top: 14px;
+
+    padding: 0 18px;
+    width: min(900px, 92vw);
+
+    max-width: 900px;
+
+    font-size: 17px;
+
+    line-height: 1.45;
+    text-align: center;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.35);
+    box-sizing: border-box;
+
+}
+
+
+/* FINAL SCREEN RESPONSIVE FIT */
+@media (max-width: 700px) {
+    #finalScreen {
+        padding: 24px 14px 24px;
+    }
+
+    #finalTitle {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+
+    #finalMural {
+        height: min(54vh, 480px);
+        max-width: 86vw;
+    }
+
+    #finalMessage {
+        margin-top: 12px;
+        padding: 0 8px;
+        font-size: 15px;
+        line-height: 1.4;
+    }
+}
+
+
+
+/* ================================================= */
+/* PUZZLE OVERLAY */
+/* ================================================= */
+#puzzleOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9500;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    box-sizing: border-box;
+    background: rgba(0,0,0,0.48);
+    pointer-events: auto;
+    overflow: visible;
+}
+
+#puzzleTitle {
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    text-align: center;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.45);
+}
+
+#puzzleHint {
+    color: white;
+    font-size: 14px;
+    margin: 0 0 12px;
+    text-align: center;
+    background: rgba(0,0,0,0.62);
+    padding: 7px 12px;
+    border-radius: 16px;
+}
+
+#puzzleBoard {
+    position: relative;
+    width: min(88vw, 560px);
+    aspect-ratio: 3 / 2;
+    border: 2px solid rgba(255,255,255,0.9);
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(20,20,20,0.75);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    touch-action: none;
+    z-index: 2;
+}
+
+.puzzle-slot {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1px dashed rgba(255,255,255,0.28);
+    background: rgba(255,255,255,0.045);
+    pointer-events: none;
+}
+
+.puzzle-piece {
+    position: absolute;
+    box-sizing: border-box;
+    cursor: grab;
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 4px;
+    background-repeat: no-repeat;
+    background-color: #333;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.38);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    will-change: transform, left, top;
+    transition: box-shadow 0.15s ease, opacity 0.2s ease;
+    z-index: 20;
+    transform-origin: center center;
+    animation: puzzlePieceFloat var(--float-duration, 3.2s) ease-in-out infinite;
+}
+
+@keyframes puzzlePieceFloat {
+    0%, 100% {
+        transform: translate3d(0, 0, 0) rotate(var(--piece-rotation, 0deg));
+    }
+    50% {
+        transform: translate3d(0, var(--float-distance, -8px), 0)
+                   rotate(var(--piece-rotation, 0deg));
+    }
+}
+
+.puzzle-piece.dragging {
+    cursor: grabbing;
+    z-index: 50;
+    box-shadow: 0 12px 26px rgba(0,0,0,0.5);
+}
+
+.puzzle-piece.locked {
+    cursor: default;
+    box-shadow: none;
+    border-color: rgba(255,255,255,0.55);
+}
+
+#puzzleProgress {
+    color: white;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    background: rgba(0,0,0,0.62);
+    padding: 7px 12px;
+    border-radius: 16px;
+}
+
+#puzzleComplete {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.96);
+    z-index: 9600;
+    display: none;
+    color: white;
+    background: rgba(0,0,0,0.82);
+    padding: 14px 22px;
+    border-radius: 24px;
+    font-size: 17px;
+    font-weight: 700;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+#puzzleComplete.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+@media (max-width: 700px) {
+    #puzzleOverlay { padding: 12px; }
+    #puzzleTitle { font-size: 20px; }
+    #puzzleHint { font-size: 13px; }
+    #puzzleBoard { width: 94vw; }
+}
+
+</style>
+
+</head>
+
+
+
+<body>
+
+
+<!-- ================================================= -->
+<!-- PROGRESS -->
+<!-- ================================================= -->
+
+<div id="progress">
+
+0/6
+
+</div>
+
+
+
+<!-- ================================================= -->
+<!-- INSTRUCTION -->
+<!-- ================================================= -->
+
+<div id="instruction">
+
+Scan a mural fragment to begin
+
+</div>
+
+
+
+<!-- ================================================= -->
+<!-- FRAGMENT CLUE -->
+<!-- ================================================= -->
+
+<div id="clueLabel">
+Find this mural fragment
+</div>
+
+<img id="fragmentClue" src="" alt="Mural fragment clue">
+
+<!-- ================================================= -->
+<!-- INTERACTIVE MURAL PUZZLE -->
+<!-- ================================================= -->
+<div id="puzzleOverlay">
+    <div id="puzzleTitle">Rebuild the mural fragment</div>
+    <div id="puzzleHint">Drag each piece into the matching position</div>
+    <div id="puzzleBoard"></div>
+    <div id="puzzleProgress">0/6 pieces placed</div>
+</div>
+
+<div id="puzzleComplete">Fragment complete ✓</div>
+
+
+
+<!-- ================================================= -->
+<!-- 3D MODEL LOADING -->
+<!-- ================================================= -->
+
+<div id="modelLoading">Loading 3D model…</div>
+
+<!-- ================================================= -->
+<!-- NEXT BUTTON -->
+<!-- ================================================= -->
+
+<div id="nextButton">
+
+NEXT →
+
+</div>
+
+
+
+<!-- ================================================= -->
+<!-- FINAL SCREEN -->
+<!-- ================================================= -->
+
+<div id="finalScreen">
+
+    <div id="finalTitle">
+
+        COMPLETE — 6/6
+
+    </div>
+
+
+    <img
+        id="finalMural"
+        src="./mural.final.png"
+        alt="Final Mural">
+
+
+    <div id="finalMessage">
+
+        FINAL MURAL MESSAGE WILL GO HERE
+
+    </div>
+
+</div>
+
+
+
+<!-- ================================================= -->
+<!-- AR CONTAINER -->
+<!-- ================================================= -->
+
+<div class="example-container">
+
+
+<a-scene
+
+    id="scene"
+
+    mindar-image="
+        imageTargetSrc: ./targets.mind;
+        maxTrack: 1;
+    "
+
+    embedded
+
+    color-space="sRGB"
+
+    renderer="
+        colorManagement: true,
+        physicallyCorrectLights
+    "
+
+    vr-mode-ui="enabled: false"
+
+    device-orientation-permission-ui="enabled: false">
+
+
+    <!-- ================================================= -->
+    <!-- CAMERA -->
+    <!-- ================================================= -->
+
+    <!--
+        STUDENT WORK 1 GLB
+
+        The GLB is loaded by JavaScript instead of A-Frame's
+        asset manager. This avoids the mobile timeout/cache problem
+        that can happen with a large GLB on GitHub Pages.
+
+        Keep student-work-01.glb in the SAME folder as index.html.
+    -->
+    <a-assets timeout="300000"></a-assets>
+
+    <a-camera
+
+        id="camera"
+
+        position="0 0 0"
+
+        look-controls="enabled: false">
+
+    </a-camera>
+
+
+
+    <!-- ================================================= -->
+    <!-- FRAGMENT 1 -->
+    <!-- ================================================= -->
+
+    <a-entity
+        id="fragment1"
+        mindar-image-target="targetIndex: 0">
+    </a-entity>
+
+
+
+    <!-- ================================================= -->
+    <!-- FRAGMENT 2 -->
+    <!-- ================================================= -->
+
+    <a-entity
+        id="fragment2"
+        mindar-image-target="targetIndex: 1">
+    </a-entity>
+
+
+
+    <!-- ================================================= -->
+    <!-- FRAGMENT 3 -->
+    <!-- ================================================= -->
+
+    <a-entity
+        id="fragment3"
+        mindar-image-target="targetIndex: 2">
+    </a-entity>
+
+
+
+    <!-- ================================================= -->
+    <!-- FRAGMENT 4 -->
+    <!-- ================================================= -->
+
+    <a-entity
+        id="fragment4"
+        mindar-image-target="targetIndex: 3">
+    </a-entity>
+
+
+
+    <!-- ================================================= -->
+    <!-- FRAGMENT 5 -->
+    <!-- ================================================= -->
+
+    <a-entity
+        id="fragment5"
+        mindar-image-target="targetIndex: 4">
+    </a-entity>
+
+
+
+    <!-- ================================================= -->
+    <!-- FRAGMENT 6 -->
+    <!-- ================================================= -->
+
+    <a-entity
+        id="fragment6"
+        mindar-image-target="targetIndex: 5">
+    </a-entity>
+
+
+</a-scene>
+
+</div>
+
+
+
+<script>
+/* ================================================= */
+/* PAASWE AR — PUZZLE FLOW + STUDENT WORK */
+/* ================================================= */
+
+const scene = document.querySelector("#scene");
+const camera = document.querySelector("#camera");
+const progress = document.querySelector("#progress");
+const instruction = document.querySelector("#instruction");
+const fragmentClue = document.querySelector("#fragmentClue");
+const clueLabel = document.querySelector("#clueLabel");
+const nextButton = document.querySelector("#nextButton");
+const modelLoading = document.querySelector("#modelLoading");
+const finalScreen = document.querySelector("#finalScreen");
+const finalMural = document.querySelector("#finalMural");
+const finalMessage = document.querySelector("#finalMessage");
+const puzzleOverlay = document.querySelector("#puzzleOverlay");
+const puzzleBoard = document.querySelector("#puzzleBoard");
+const puzzleProgress = document.querySelector("#puzzleProgress");
+const puzzleComplete = document.querySelector("#puzzleComplete");
+
+const TOTAL_FRAGMENTS = 6;
+const WORKS_PER_FRAGMENT = 1;
+const PUZZLE_COLS = 3;
+const PUZZLE_ROWS = 2;
+const PUZZLE_PIECES = PUZZLE_COLS * PUZZLE_ROWS;
+const STUDENT_WORK_01_URL = "./student-work-01.glb";
+
+const fragmentDescriptions = [
+    "Rooted in the industrial past, where personal dreams and initial ambitions begin.",
+    "Stepping onto the path of action, where the fast-paced world brings the challenge of comparing yourself to others.",
+    "Racing upwards through time, where pursuing perfection causes some to grow stronger and some to lose their inner selves.",
+    "Pausing at the central clock is the main point where memories are recorded, and pulling back to our original goals.",
+    "Facing the modern world and rethinking what success means; keep chasing an impossible ideal of perfection, or choose to be at peace with yourself.",
+    "Floating upward into self-acceptance, realizing you are already good enough just as you are."
+];
+
+const fragmentClueImages = [
+    ["./mural.fragment.1.png", "./mural.fragment1.png"],
+    ["./mural.fragment.2.png", "./mural.fragment2.png"],
+    ["./mural.fragment.3.png", "./mural.fragment3.png"],
+    ["./mural.fragment.4.png", "./mural.fragment4.png"],
+    ["./mural.fragment.5.png", "./mural.fragment5.png"],
+    ["./mural.fragment.6.png", "./mural.fragment6.png"]
+];
+
+let clueFallbackIndex = 0;
+let activeFragment = null;
+let activeWork = null;
+let activeWorkIndex = -1;
+let completedFragments = 0;
+let isDragging = false;
+let previousX = 0;
+let previousY = 0;
+
+/* GLB state — keeps the working GitHub Pages loading method. */
+let studentWork01Ready = false;
+let studentWork01Failed = false;
+let studentWork01Model = null;
+let studentWork01BlobURL = null;
+let studentWork01LoadPromise = null;
+const STUDENT_WORK_01_MAX_ATTEMPTS = 4;
+
+/* ================================================= */
+/* FRAGMENT DATA */
+/* ================================================= */
+const fragments = [];
+for (let i = 1; i <= TOTAL_FRAGMENTS; i++) {
+    fragments.push({
+        target: document.querySelector("#fragment" + i),
+        index: i - 1,
+        hotspots: [],
+        works: [],
+        caption: null,
+        found: false,
+        puzzleSolved: false,
+        puzzleStarted: false,
+        completedWorks: 0
+    });
+}
+
+/* ================================================= */
+/* CLUE */
+/* ================================================= */
+function showFragmentClue(index) {
+    if (index < 0 || index >= TOTAL_FRAGMENTS) {
+        hideFragmentClue();
+        return;
+    }
+
+    const sources = fragmentClueImages[index];
+    clueFallbackIndex = 0;
+
+    fragmentClue.onload = function () {
+        fragmentClue.style.display = "block";
+        clueLabel.innerText = "Find mural fragment " + (index + 1);
+        clueLabel.style.display = "block";
+    };
+
+    fragmentClue.onerror = function () {
+        if (clueFallbackIndex < sources.length - 1) {
+            clueFallbackIndex++;
+            fragmentClue.src = sources[clueFallbackIndex];
+        } else {
+            fragmentClue.style.display = "none";
+            clueLabel.innerText = "Find mural fragment " + (index + 1);
+            clueLabel.style.display = "block";
+        }
+    };
+
+    fragmentClue.src = sources[0];
+}
+
+function hideFragmentClue() {
+    fragmentClue.style.display = "none";
+    clueLabel.style.display = "none";
+}
+
+function isExpectedFragment(fragment) {
+    return fragment && fragment.index === completedFragments;
+}
+
+/* ================================================= */
+/* CAPTION — ORIGINAL TEXT KEPT */
+/* ================================================= */
+function createFragmentCaption(fragment) {
+    const caption = document.createElement("a-entity");
+    caption.id = "fragment" + (fragment.index + 1) + "-caption";
+    caption.setAttribute("position", "0 -0.62 0.14");
+    caption.setAttribute("visible", "false");
+
+    const panel = document.createElement("a-plane");
+    panel.setAttribute("position", "0 0 -0.01");
+    panel.setAttribute("width", "1.55");
+    panel.setAttribute("height", "0.22");
+    panel.setAttribute("material", "color: #000000; opacity: 0.68; transparent: true; side: double;");
+    caption.appendChild(panel);
+
+    const text = document.createElement("a-text");
+    text.setAttribute("value", fragmentDescriptions[fragment.index]);
+    text.setAttribute("align", "center");
+    text.setAttribute("anchor", "center");
+    text.setAttribute("baseline", "center");
+    text.setAttribute("width", "1.45");
+    text.setAttribute("color", "#FFFFFF");
+    text.setAttribute("wrap-count", "48");
+    text.setAttribute("side", "double");
+    caption.appendChild(text);
+
+    fragment.target.appendChild(caption);
+    fragment.caption = caption;
+}
+
+function showFragmentCaption(fragment) {
+    if (fragment.caption) fragment.caption.setAttribute("visible", "true");
+}
+
+function hideFragmentCaption(fragment) {
+    if (fragment.caption) fragment.caption.setAttribute("visible", "false");
+}
+
+/* ================================================= */
+/* STUDENT WORK */
+/* ================================================= */
+function createStudentWork(fragment, workIndex) {
+    const work = document.createElement("a-entity");
+    work.id = "fragment" + (fragment.index + 1) + "-work" + (workIndex + 1);
+    work.setAttribute("position", "0 0 0.35");
+    work.setAttribute("visible", "false");
+
+    if (fragment.index === 0 && workIndex === 0) {
+        const model = document.createElement("a-entity");
+        model.setAttribute("position", "0 0 0");
+        model.setAttribute("scale", "0.025 0.025 0.025");
+        model.setAttribute("visible", "false");
+        model.setAttribute("class", "student-work-model");
+
+        /* IMPORTANT: keep a direct reference for the successful blob-loading method. */
+        studentWork01Model = model;
+
+        model.addEventListener("model-loaded", function () {
+            model.setAttribute("visible", "true");
+            studentWork01Ready = true;
+            hideModelLoading();
+        });
+
+        model.addEventListener("model-error", function (event) {
+            console.warn("Student Work 1 GLB parse error", event);
+            studentWork01Ready = false;
+        });
+
+        work.appendChild(model);
+    } else {
+        /* Temporary test geometry for the remaining works. */
+        const box1 = document.createElement("a-box");
+        box1.setAttribute("position", "0 0 0");
+        box1.setAttribute("scale", "0.6 0.15 0.15");
+        box1.setAttribute("color", "#333333");
+        work.appendChild(box1);
+
+        const box2 = document.createElement("a-box");
+        box2.setAttribute("position", "0 0.3 0");
+        box2.setAttribute("scale", "0.15 0.6 0.15");
+        box2.setAttribute("color", "#555555");
+        work.appendChild(box2);
+
+        const sphere = document.createElement("a-sphere");
+        sphere.setAttribute("position", "0 0.65 0");
+        sphere.setAttribute("radius", "0.15");
+        sphere.setAttribute("color", "#FFD400");
+        work.appendChild(sphere);
+    }
+
+    fragment.target.appendChild(work);
+    fragment.works.push(work);
+    return work;
+}
+
+/* ================================================= */
+/* HOTSPOT — ONE PER FRAGMENT */
+/* ================================================= */
+function createHotspot(fragment, workIndex) {
+    const hotspot = document.createElement("a-entity");
+    hotspot.id = "fragment" + (fragment.index + 1) + "-hotspot" + (workIndex + 1);
+    hotspot.classList.add("hotspot");
+    hotspot.setAttribute("position", "0 0.18 0.12");
+    hotspot.setAttribute("visible", "false");
+
+    const glow = document.createElement("a-sphere");
+    glow.setAttribute("radius", "0.11");
+    glow.setAttribute("material", "color: #FFD400; opacity: 0.25; transparent: true; shader: standard; emissive: #FFD400; emissiveIntensity: 2;");
+    hotspot.appendChild(glow);
+
+    const inner = document.createElement("a-sphere");
+    inner.setAttribute("radius", "0.055");
+    inner.setAttribute("material", "color: #FFFFFF; emissive: #FFFFFF; emissiveIntensity: 3;");
+    hotspot.appendChild(inner);
+
+    const animation = document.createElement("a-animation");
+    animation.setAttribute("attribute", "scale");
+    animation.setAttribute("from", "1 1 1");
+    animation.setAttribute("to", "1.45 1.45 1.45");
+    animation.setAttribute("dur", "900");
+    animation.setAttribute("direction", "alternate");
+    animation.setAttribute("repeat", "indefinite");
+    animation.setAttribute("easing", "ease-in-out");
+    hotspot.appendChild(animation);
+
+    const ring = document.createElement("a-ring");
+    ring.setAttribute("radius-inner", "0.12");
+    ring.setAttribute("radius-outer", "0.16");
+    ring.setAttribute("rotation", "-90 0 0");
+    ring.setAttribute("material", "color: #FFD400; emissive: #FFD400; emissiveIntensity: 2; side: double;");
+    hotspot.appendChild(ring);
+
+    fragment.target.appendChild(hotspot);
+    fragment.hotspots.push(hotspot);
+    return hotspot;
+}
+
+fragments.forEach(function (fragment) {
+    createFragmentCaption(fragment);
+    createHotspot(fragment, 0);
+    createStudentWork(fragment, 0);
+});
+
+/* ================================================= */
+/* PUZZLE ENGINE */
+/* ================================================= */
+let puzzleState = null;
+
+function shuffle(array) {
+    const result = array.slice();
+    for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+}
+
+function showPuzzle(fragment) {
+    if (!fragment) return;
+
+    hideFragmentClue();
+    hideFragmentHotspots(fragment);
+    hideFragmentCaption(fragment);
+
+    fragment.puzzleStarted = true;
+    puzzleState = {
+        fragmentIndex: fragment.index,
+        solvedCount: 0,
+        pieces: [],
+        activePiece: null,
+        offsetX: 0,
+        offsetY: 0,
+        startLeft: 0,
+        startTop: 0,
+        startParent: null
+    };
+
+    puzzleBoard.innerHTML = "";
+
+    // Remove any old floating pieces from a previous puzzle.
+    puzzleOverlay.querySelectorAll(".puzzle-piece").forEach(function (piece) {
+        piece.remove();
+    });
+
+    puzzleProgress.innerText = "0/" + PUZZLE_PIECES + " pieces placed";
+    puzzleComplete.classList.remove("show");
+    puzzleComplete.style.display = "none";
+
+    const imageUrl = fragmentClueImages[fragment.index][0];
+    const order = shuffle([...Array(PUZZLE_PIECES).keys()]);
+
+    const tileW = 100 / PUZZLE_COLS;
+    const tileH = 100 / PUZZLE_ROWS;
+
+    // The six empty target slots stay inside the board.
+    for (let i = 0; i < PUZZLE_PIECES; i++) {
+        const slot = document.createElement("div");
+        slot.className = "puzzle-slot";
+        slot.style.left = (i % PUZZLE_COLS) * tileW + "%";
+        slot.style.top = Math.floor(i / PUZZLE_COLS) * tileH + "%";
+        slot.style.width = tileW + "%";
+        slot.style.height = tileH + "%";
+        puzzleBoard.appendChild(slot);
+    }
+
+    // Show the overlay first so the board has its real screen position.
+    puzzleOverlay.style.display = "flex";
+    instruction.style.display = "none";
+    nextButton.style.display = "none";
+
+    requestAnimationFrame(function () {
+        const overlayRect = puzzleOverlay.getBoundingClientRect();
+        const boardRect = puzzleBoard.getBoundingClientRect();
+
+        /*
+         * Pieces are deliberately NOT placed in the board.
+         * They are scattered around it, like fragments floating nearby,
+         * waiting for the visitor to collect them.
+         */
+        const pieceW = boardRect.width / PUZZLE_COLS;
+        const pieceH = boardRect.height / PUZZLE_ROWS;
+
+        const safeTop = Math.max(
+            12,
+            boardRect.top - overlayRect.top - pieceH - 28
+        );
+        const safeBottom = Math.min(
+            overlayRect.height - pieceH - 12,
+            boardRect.bottom - overlayRect.top + 28
+        );
+
+        const leftZoneX = Math.max(
+            8,
+            boardRect.left - overlayRect.left - pieceW - 32
+        );
+        const rightZoneX = Math.min(
+            overlayRect.width - pieceW - 8,
+            boardRect.right - overlayRect.left + 32
+        );
+
+        const positions = [];
+
+        /*
+         * Keep the pieces irregular and floating, but give them enough
+         * separation that visitors can see the complete image on every piece.
+         * Three pieces live on each side in loose vertical bands. The small
+         * jitter prevents a rigid grid while the minimum spacing prevents
+         * pieces from hiding one another.
+         */
+        const availableH = Math.max(1, safeBottom - safeTop);
+        const bandY = [
+            safeTop + availableH * 0.14,
+            safeTop + availableH * 0.50,
+            safeTop + availableH * 0.86
+        ];
+
+        const candidates = [
+            { side: "left",  band: 0 },
+            { side: "left",  band: 1 },
+            { side: "left",  band: 2 },
+            { side: "right", band: 0 },
+            { side: "right", band: 1 },
+            { side: "right", band: 2 }
+        ];
+
+        candidates.forEach(function (candidate) {
+            // Small horizontal variation makes the pieces feel scattered.
+            const jitterX = (Math.random() - 0.5) * Math.min(28, pieceW * 0.28);
+            // Keep vertical variation modest so neighboring pieces never
+            // completely cover each other.
+            const jitterY = (Math.random() - 0.5) * Math.min(24, pieceH * 0.22);
+
+            let x = (candidate.side === "left" ? leftZoneX : rightZoneX) + jitterX;
+            let y = bandY[candidate.band] + jitterY;
+
+            // Keep every entire piece visible inside the phone/screen.
+            x = Math.max(6, Math.min(overlayRect.width - pieceW - 6, x));
+            y = Math.max(6, Math.min(overlayRect.height - pieceH - 6, y));
+
+            positions.push({ x, y });
+        });
+
+        order.forEach(function (correctIndex, shuffledIndex) {
+            const piece = document.createElement("div");
+            piece.className = "puzzle-piece";
+            piece.dataset.correct = String(correctIndex);
+            piece.dataset.locked = "false";
+
+            piece.style.width = pieceW + "px";
+            piece.style.height = pieceH + "px";
+            piece.style.backgroundImage = "url('" + imageUrl + "')";
+            piece.style.backgroundSize =
+                PUZZLE_COLS * 100 + "% " + PUZZLE_ROWS * 100 + "%";
+            piece.style.backgroundPosition =
+                (correctIndex % PUZZLE_COLS) * 50 + "% " +
+                Math.floor(correctIndex / PUZZLE_COLS) * 100 + "%";
+
+            const pos = positions[shuffledIndex];
+            piece.style.left = pos.x + "px";
+            piece.style.top = pos.y + "px";
+
+            const rotation = (Math.random() - 0.5) * 14;
+            const duration = (2.6 + Math.random() * 1.8).toFixed(2) + "s";
+            const floatDistance = (5 + Math.random() * 7).toFixed(1) + "px";
+
+            piece.style.setProperty("--piece-rotation", rotation + "deg");
+            piece.style.setProperty("--float-duration", duration);
+            piece.style.setProperty("--float-distance", floatDistance);
+            piece.style.zIndex = String(20 + shuffledIndex);
+
+            piece.addEventListener("pointerdown", puzzlePointerDown);
+            piece.addEventListener("pointermove", puzzlePointerMove);
+            piece.addEventListener("pointerup", puzzlePointerUp);
+            piece.addEventListener("pointercancel", puzzlePointerUp);
+
+            puzzleOverlay.appendChild(piece);
+            puzzleState.pieces.push(piece);
+        });
+    });
+}
+
+function puzzlePointerDown(event) {
+    if (!puzzleState) return;
+    if (this.dataset.locked === "true") return;
+
+    event.preventDefault();
+    this.setPointerCapture?.(event.pointerId);
+
+    // Stop the floating animation while the visitor is holding the piece.
+    this.style.animation = "none";
+    this.classList.add("dragging");
+    puzzleState.activePiece = this;
+
+    const overlayRect = puzzleOverlay.getBoundingClientRect();
+    const left = parseFloat(this.style.left) || 0;
+    const top = parseFloat(this.style.top) || 0;
+
+    puzzleState.startLeft = left;
+    puzzleState.startTop = top;
+    puzzleState.startParent = this.parentElement;
+
+    puzzleState.offsetX =
+        event.clientX - overlayRect.left - left;
+    puzzleState.offsetY =
+        event.clientY - overlayRect.top - top;
+
+    this.style.zIndex = "100";
+}
+
+function puzzlePointerMove(event) {
+    if (!puzzleState || puzzleState.activePiece !== this) return;
+    if (this.dataset.locked === "true") return;
+
+    event.preventDefault();
+
+    const overlayRect = puzzleOverlay.getBoundingClientRect();
+    const boardRect = puzzleBoard.getBoundingClientRect();
+
+    const w = parseFloat(this.style.width);
+    const h = parseFloat(this.style.height);
+
+    let x =
+        event.clientX -
+        overlayRect.left -
+        puzzleState.offsetX;
+
+    let y =
+        event.clientY -
+        overlayRect.top -
+        puzzleState.offsetY;
+
+    // Allow free movement over the board and around it,
+    // while keeping the whole piece visible on screen.
+    x = Math.max(4, Math.min(overlayRect.width - w - 4, x));
+    y = Math.max(4, Math.min(overlayRect.height - h - 4, y));
+
+    this.style.left = x + "px";
+    this.style.top = y + "px";
+}
+
+function puzzlePointerUp(event) {
+    if (!puzzleState || puzzleState.activePiece !== this) return;
+
+    event.preventDefault();
+    this.classList.remove("dragging");
+
+    const overlayRect = puzzleOverlay.getBoundingClientRect();
+    const boardRect = puzzleBoard.getBoundingClientRect();
+
+    const w = parseFloat(this.style.width);
+    const h = parseFloat(this.style.height);
+
+    const currentLeft = parseFloat(this.style.left) || 0;
+    const currentTop = parseFloat(this.style.top) || 0;
+
+    // Convert the board's screen position into puzzleOverlay coordinates.
+    const boardLeft = boardRect.left - overlayRect.left;
+    const boardTop = boardRect.top - overlayRect.top;
+
+    const tileW = boardRect.width / PUZZLE_COLS;
+    const tileH = boardRect.height / PUZZLE_ROWS;
+
+    const correctIndex = Number(this.dataset.correct);
+    const targetLeft =
+        boardLeft + (correctIndex % PUZZLE_COLS) * tileW;
+    const targetTop =
+        boardTop + Math.floor(correctIndex / PUZZLE_COLS) * tileH;
+
+    const tolerance = Math.min(tileW, tileH) * 0.30;
+
+    const distance = Math.hypot(
+        currentLeft - targetLeft,
+        currentTop - targetTop
+    );
+
+    if (distance <= tolerance) {
+        /*
+         * Look for another movable piece occupying the target.
+         * Locked pieces are never overwritten.
+         */
+        let occupant = null;
+        let bestOverlap = 0;
+
+        for (const other of puzzleState.pieces) {
+            if (other === this) continue;
+
+            const otherLeft = parseFloat(other.style.left) || 0;
+            const otherTop = parseFloat(other.style.top) || 0;
+            const otherRight = otherLeft + w;
+            const otherBottom = otherTop + h;
+
+            const overlapW = Math.max(
+                0,
+                Math.min(otherRight, targetLeft + tileW) -
+                Math.max(otherLeft, targetLeft)
+            );
+
+            const overlapH = Math.max(
+                0,
+                Math.min(otherBottom, targetTop + tileH) -
+                Math.max(otherTop, targetTop)
+            );
+
+            const overlapArea = overlapW * overlapH;
+
+            if (overlapArea > bestOverlap) {
+                bestOverlap = overlapArea;
+                occupant = other;
+            }
+        }
+
+        const targetArea = tileW * tileH;
+        const targetOccupied =
+            occupant && bestOverlap > targetArea * 0.20;
+
+        if (targetOccupied && occupant.dataset.locked === "true") {
+            // Never cover a correctly locked piece.
+            this.style.left = puzzleState.startLeft + "px";
+            this.style.top = puzzleState.startTop + "px";
+        } else {
+            if (targetOccupied) {
+                const occupantLeft = parseFloat(occupant.style.left) || 0;
+                const occupantTop = parseFloat(occupant.style.top) || 0;
+
+                // Move the displaced piece to the dragged piece's old spot.
+                occupant.style.left = puzzleState.startLeft + "px";
+                occupant.style.top = puzzleState.startTop + "px";
+                occupant.style.zIndex = "20";
+
+                // If another movable piece is sitting on that old spot,
+                // move it to the displaced piece's previous spot.
+                for (const other of puzzleState.pieces) {
+                    if (other === this || other === occupant) continue;
+
+                    const otherLeft = parseFloat(other.style.left) || 0;
+                    const otherTop = parseFloat(other.style.top) || 0;
+
+                    const overlapsOld =
+                        Math.abs(otherLeft - puzzleState.startLeft) < tileW * 0.35 &&
+                        Math.abs(otherTop - puzzleState.startTop) < tileH * 0.35;
+
+                    if (overlapsOld && other.dataset.locked !== "true") {
+                        other.style.left = occupantLeft + "px";
+                        other.style.top = occupantTop + "px";
+                        other.style.zIndex = "20";
+                        break;
+                    }
+                }
+            }
+
+            // Snap the correct piece exactly into the target slot.
+            this.style.left = targetLeft + "px";
+            this.style.top = targetTop + "px";
+            this.dataset.locked = "true";
+            this.classList.add("locked");
+            this.style.animation = "none";
+            this.style.transform = "rotate(0deg)";
+            this.style.zIndex = "80";
+
+            puzzleState.solvedCount++;
+            puzzleProgress.innerText =
+                puzzleState.solvedCount +
+                "/" +
+                PUZZLE_PIECES +
+                " pieces placed";
+
+            if (puzzleState.solvedCount === PUZZLE_PIECES) {
+                finishPuzzle();
+            }
+        }
+    }
+
+    /*
+     * If it was not correct, leave it where the visitor released it,
+     * and restart its gentle floating animation.
+     */
+    if (this.dataset.locked !== "true") {
+        const rotation = this.style.getPropertyValue("--piece-rotation") || "0deg";
+        this.style.animation =
+            "puzzlePieceFloat var(--float-duration, 3.2s) ease-in-out infinite";
+        this.style.setProperty("--piece-rotation", rotation);
+        this.style.zIndex = "20";
+    }
+
+    puzzleState.activePiece = null;
+}
+
+function finishPuzzle() {
+    const fragment = fragments[puzzleState.fragmentIndex];
+    fragment.puzzleSolved = true;
+
+    puzzleComplete.style.display = "block";
+    requestAnimationFrame(function () {
+        puzzleComplete.classList.add("show");
+    });
+
+    setTimeout(function () {
+        puzzleComplete.classList.remove("show");
+        setTimeout(function () {
+            puzzleComplete.style.display = "none";
+            puzzleOverlay.style.display = "none";
+            showFragmentHotspots(fragment);
+        }, 220);
+    }, 700);
+}
+
+/* ================================================= */
+/* HOTSPOTS */
+/* ================================================= */
+function showFragmentHotspots(fragment) {
+    if (!fragment || !fragment.puzzleSolved || activeWork) return;
+
+    fragment.hotspots.forEach(function (hotspot, index) {
+        const work = fragment.works[index];
+        if (work && work.dataset.completed !== "true") {
+            hotspot.setAttribute("visible", "true");
+        }
+    });
+
+    hideFragmentCaption(fragment);
+    instruction.innerText = "Puzzle complete — tap the glowing hotspot to explore the student work";
+    instruction.style.display = "block";
+}
+
+function hideFragmentHotspots(fragment) {
+    if (!fragment) return;
+    fragment.hotspots.forEach(function (hotspot) {
+        hotspot.setAttribute("visible", "false");
+    });
+}
+
+/* ================================================= */
+/* TARGET FOUND / LOST */
+/* ================================================= */
+fragments.forEach(function (fragment) {
+    fragment.target.addEventListener("targetFound", function () {
+        fragment.found = true;
+
+        if (!isExpectedFragment(fragment)) {
+            instruction.innerText = "Not this fragment — find Fragment " + (completedFragments + 1);
+            instruction.style.display = "block";
+            return;
+        }
+
+        activeFragment = fragment;
+        hideFragmentClue();
+
+        if (activeWork) return;
+        if (fragment.puzzleSolved) {
+            showFragmentHotspots(fragment);
+        } else {
+            showPuzzle(fragment);
+        }
+    });
+
+    fragment.target.addEventListener("targetLost", function () {
+        fragment.found = false;
+
+        /*
+         * Once Student Work is open, its caption belongs to the active
+         * exploration state. Do not let a brief AR targetLost event remove
+         * the text that has just appeared.
+         */
+        if (!(activeWork && activeFragment === fragment)) {
+            hideFragmentCaption(fragment);
+        }
+
+        hideFragmentHotspots(fragment);
+        isDragging = false;
+
+        if (!activeWork && fragment.index === completedFragments && !fragment.puzzleSolved) {
+            puzzleOverlay.style.display = "none";
+            showFragmentClue(completedFragments);
+        }
+    });
+});
+
+/* ================================================= */
+/* RAYCASTER */
+/* ================================================= */
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function getThreeCamera() {
+    if (scene.camera && scene.camera.isCamera) return scene.camera;
+    if (camera.components && camera.components.camera && camera.components.camera.camera) {
+        return camera.components.camera.camera;
+    }
+    return null;
+}
+
+function checkHotspotClick(clientX, clientY) {
+    if (activeWork || !activeFragment || !activeFragment.found || !activeFragment.puzzleSolved) return false;
+
+    const canvas = scene.canvas;
+    if (!canvas) return false;
+    const rect = canvas.getBoundingClientRect();
+
+    mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+
+    const threeCamera = getThreeCamera();
+    if (!threeCamera) return false;
+
+    raycaster.setFromCamera(mouse, threeCamera);
+
+    for (let i = 0; i < activeFragment.hotspots.length; i++) {
+        const hotspot = activeFragment.hotspots[i];
+        if (!hotspot.object3D.visible) continue;
+
+        const intersections = raycaster.intersectObject(hotspot.object3D, true);
+        if (intersections.length > 0) {
+            openStudentWork(activeFragment.index, i);
+            return true;
+        }
+    }
+    return false;
+}
+
+/* ================================================= */
+/* GLB LOADING — SAME ROBUST BLOB METHOD */
+/* ================================================= */
+function startStudentWork01Load() {
+    if (studentWork01Ready) return Promise.resolve();
+    if (studentWork01LoadPromise) return studentWork01LoadPromise;
+    studentWork01LoadPromise = loadStudentWork01WithRetry();
+    return studentWork01LoadPromise;
+}
+
+async function loadStudentWork01WithRetry() {
+    for (let attempt = 1; attempt <= STUDENT_WORK_01_MAX_ATTEMPTS; attempt++) {
+        try {
+            const url = attempt === 1
+                ? STUDENT_WORK_01_URL
+                : STUDENT_WORK_01_URL + "?retry=" + attempt + "-" + Date.now();
+
+            const response = await fetch(url, {
+                method: "GET",
+                cache: attempt === 1 ? "default" : "reload",
+                credentials: "same-origin"
+            });
+
+            if (!response.ok) throw new Error("HTTP " + response.status);
+
+            const buffer = await response.arrayBuffer();
+            if (!buffer || buffer.byteLength < 20) throw new Error("GLB response is empty or too small.");
+
+            if (studentWork01BlobURL) URL.revokeObjectURL(studentWork01BlobURL);
+            const blob = new Blob([buffer], { type: "model/gltf-binary" });
+            studentWork01BlobURL = URL.createObjectURL(blob);
+
+            if (!studentWork01Model) throw new Error("Student Work 1 model entity is not ready yet.");
+
+            studentWork01Model.setAttribute("gltf-model", studentWork01BlobURL);
+
+            await new Promise(function (resolve, reject) {
+                let settled = false;
+                function cleanup() {
+                    studentWork01Model.removeEventListener("model-loaded", onLoaded);
+                    studentWork01Model.removeEventListener("model-error", onError);
+                }
+                function onLoaded() {
+                    if (settled) return;
+                    settled = true;
+                    cleanup();
+                    resolve();
+                }
+                function onError(event) {
+                    if (settled) return;
+                    settled = true;
+                    cleanup();
+                    reject(event || new Error("A-Frame GLB parse failed."));
+                }
+                studentWork01Model.addEventListener("model-loaded", onLoaded);
+                studentWork01Model.addEventListener("model-error", onError);
+                if (studentWork01Model.getObject3D("mesh")) onLoaded();
+            });
+
+            studentWork01Ready = true;
+            studentWork01Failed = false;
+            hideModelLoading();
+            return;
+        } catch (error) {
+            console.warn("Student Work 1 GLB attempt " + attempt + " failed", error);
+            studentWork01Ready = false;
+            studentWork01Failed = false;
+            if (attempt < STUDENT_WORK_01_MAX_ATTEMPTS) {
+                await new Promise(resolve => setTimeout(resolve, 600));
+            }
+        }
+    }
+
+    studentWork01Failed = true;
+    showModelLoading();
+    modelLoading.innerText = "Preparing 3D model…";
+}
+
+function showModelLoading() {
+    modelLoading.classList.remove("error");
+    modelLoading.innerText = "Loading 3D model…";
+    modelLoading.style.display = "block";
+}
+
+function hideModelLoading() {
+    modelLoading.style.display = "none";
+}
+
+/* Start the GLB download early, while the visitor is finding Fragment 1. */
+startStudentWork01Load();
+
+/* ================================================= */
+/* OPEN STUDENT WORK */
+/* ================================================= */
+function openStudentWork(fragmentIndex, workIndex) {
+    if (activeWork) return;
+
+    const fragment = fragments[fragmentIndex];
+    const work = fragment.works[workIndex];
+    if (!fragment || !work || work.dataset.completed === "true") return;
+
+    activeFragment = fragment;
+    activeWork = work;
+    activeWorkIndex = workIndex;
+
+    hideFragmentHotspots(fragment);
+    showFragmentCaption(fragment);
+    instruction.style.display = "none";
+
+    if (fragment.index === 0 && workIndex === 0) {
+        if (!studentWork01Ready) {
+            showModelLoading();
+            startStudentWork01Load();
+        }
+    }
+
+    work.setAttribute("visible", "true");
+
+    /* Re-assert the caption after showing the work so AR tracking/UI
+       updates cannot leave Student Work visible without its text. */
+    showFragmentCaption(fragment);
+
+    if (fragment.index === 0 && workIndex === 0 && studentWork01Model) {
+        studentWork01Model.setAttribute("visible", studentWork01Ready ? "true" : "false");
+    }
+
+    work.object3D.rotation.set(0, 0, 0);
+    nextButton.style.display = "block";
+}
+
+/* ================================================= */
+/* NEXT */
+/* ================================================= */
+nextButton.addEventListener("click", function (event) {
+    event.stopPropagation();
+    if (!activeWork) return;
+    finishCurrentStudentWork();
+});
+
+function finishCurrentStudentWork() {
+    if (!activeWork || !activeFragment) return;
+
+    const work = activeWork;
+    const fragment = activeFragment;
+
+    if (work.dataset.completed === "true") return;
+    work.dataset.completed = "true";
+    fragment.completedWorks++;
+
+    work.setAttribute("visible", "false");
+    activeWork = null;
+    activeWorkIndex = -1;
+    nextButton.style.display = "none";
+    hideModelLoading();
+
+    completeFragment(fragment);
+}
+
+/* ================================================= */
+/* ROTATION */
+/* ================================================= */
+window.addEventListener("mousedown", function (event) {
+    if (checkHotspotClick(event.clientX, event.clientY)) return;
+    if (!activeWork || !activeWork.object3D.visible) return;
+
+    isDragging = true;
+    previousX = event.clientX;
+    previousY = event.clientY;
+});
+
+window.addEventListener("mousemove", function (event) {
+    if (!isDragging || !activeWork) return;
+
+    const deltaX = event.clientX - previousX;
+    const deltaY = event.clientY - previousY;
+    activeWork.object3D.rotation.y += deltaX * 0.01;
+    activeWork.object3D.rotation.x += deltaY * 0.01;
+    previousX = event.clientX;
+    previousY = event.clientY;
+});
+
+window.addEventListener("mouseup", function () {
+    isDragging = false;
+});
+
+window.addEventListener("touchstart", function (event) {
+    if (event.target === nextButton || nextButton.contains(event.target)) return;
+    if (!event.touches.length) return;
+
+    const touch = event.touches[0];
+    if (checkHotspotClick(touch.clientX, touch.clientY)) {
+        event.preventDefault();
+        return;
+    }
+
+    if (!activeWork || !activeWork.object3D.visible) return;
+
+    isDragging = true;
+    previousX = touch.clientX;
+    previousY = touch.clientY;
+}, { passive: false });
+
+window.addEventListener("touchmove", function (event) {
+    if (!isDragging || !activeWork || !event.touches.length) return;
+
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - previousX;
+    const deltaY = touch.clientY - previousY;
+    activeWork.object3D.rotation.y += deltaX * 0.01;
+    activeWork.object3D.rotation.x += deltaY * 0.01;
+    previousX = touch.clientX;
+    previousY = touch.clientY;
+    event.preventDefault();
+}, { passive: false });
+
+window.addEventListener("touchend", function () {
+    isDragging = false;
+});
+
+/* ================================================= */
+/* COMPLETE FRAGMENT */
+/* ================================================= */
+function completeFragment(fragment) {
+    hideFragmentHotspots(fragment);
+    hideFragmentCaption(fragment);
+    completedFragments++;
+    progress.innerText = completedFragments + "/" + TOTAL_FRAGMENTS;
+
+    if (completedFragments >= TOTAL_FRAGMENTS) {
+        showFinalMural();
+        return;
+    }
+
+    activeFragment = null;
+    instruction.innerText = "Fragment " + (fragment.index + 1) + " complete — find the next mural fragment";
+    instruction.style.display = "block";
+    showFragmentClue(completedFragments);
+}
+
+/* ================================================= */
+/* FINAL MURAL — ORIGINAL */
+/* ================================================= */
+function showFinalMural() {
+    hideFragmentClue();
+    progress.innerText = "6/6";
+    instruction.style.display = "none";
+    document.querySelector(".example-container").style.display = "block";
+    finalScreen.style.display = "flex";
+    finalMural.style.display = "block";
+    finalMessage.innerText = "Dreams are intangible, they cannot be seen or touched. Technology, a creation of humans has becomes an extensions of our senses, it captures memories, emotions, and moments of everyday that we often overlook. The times, each era remind us to pause, reflects and continue chasing our dreams without losing ourself.";
+}
+
+/* ================================================= */
+/* INITIAL */
+/* ================================================= */
+instruction.innerText = "Scan a mural fragment to begin";
+showFragmentClue(0);
+progress.innerText = "0/6";
+
+console.log("🚀 PAASWE AR SYSTEM READY — PUZZLE FLOW");
+console.log("📦 6 FRAGMENTS");
+console.log("🧩 6-PIECE PUZZLE PER FRAGMENT");
+console.log("🧱 ONE STUDENT WORK PER FRAGMENT");
+console.log("➡️ NEXT BUTTON CONTROLS COMPLETION");
+</script>
+
+
+</body>
+
+</html>
